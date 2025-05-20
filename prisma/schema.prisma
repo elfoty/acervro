@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Livro {
+  id Int @id @default(autoincrement())  
+  nome String
+  autores LivroAutor[]
+  ISBN String
+  categoria CategoriaLivro[]
+  paginas Int
+  lancamento DateTime
+}
+
+model Autor {
+  id         Int        @id @default(autoincrement())
+  nome String
+  nascimento DateTime
+  bio String
+  livros LivroAutor[]
+}
+
+model LivroAutor {
+  livroId  Int
+  autorId  Int
+
+  livro    Livro @relation(fields: [livroId], references: [id])
+  autor    Autor @relation(fields: [autorId], references: [id])
+
+  @@id([livroId, autorId])
+}
+
+
+model Usuario {
+  id         Int        @id @default(autoincrement())
+  nome       String
+  sobrenome  String
+  email      String     @unique
+  telefone   String
+  senha      String 
+  nascimento DateTime
+  permissoes Permissao
+}
+
+model CategoriaLivro {
+  livroId     Int
+  categoriaId Int
+
+  livro       Livro     @relation(fields: [livroId], references: [id])
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+
+  @@id([livroId, categoriaId])
+}
+
+model Categoria {
+  id    Int              @id @default(autoincrement())
+  nome  String           @unique
+  livros CategoriaLivro[]
+}
+
+enum Permissao{
+  COMUM
+  ADMIN
+  AUTOR
+  CURAD
+  DESEN
+}
