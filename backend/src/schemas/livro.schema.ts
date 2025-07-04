@@ -202,3 +202,63 @@ export const editLivroSchema = {
     }
   }
 }
+
+export const searchBooksSchema = {
+  description: 'Buscar livros via Google Books API',
+  tags: ['Livro'],
+  querystring: {
+    type: 'object',
+    properties: {
+      q: { type: 'string' },
+      maxResults: { type: 'number', minimum: 1, maximum: 40, default: 5 },
+      searchType: { type: 'string', enum: ['general', 'isbn'], default: 'general' }
+    },
+    required: ['q']
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          volumeInfo: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              authors: {
+                type: 'array',
+                items: { type: 'string' },
+                nullable: true
+              },
+              publishedDate: { type: 'string', nullable: true },
+              pageCount: { type: 'number', nullable: true },
+              industryIdentifiers: {
+                type: 'array',
+                nullable: true,
+                items: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string' },
+                    identifier: { type: 'string' }
+                  },
+                  required: ['type', 'identifier']
+                }
+              },
+              description: { type: 'string', nullable: true },
+              imageLinks: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  thumbnail: { type: 'string', nullable: true }
+                }
+              }
+            },
+            required: ['title']
+          }
+        },
+        required: ['id', 'volumeInfo']
+      }
+    }
+  }
+}

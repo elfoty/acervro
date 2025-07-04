@@ -5,6 +5,7 @@ import {
     createLivro,
     deleteLivro,
     editLivro,
+    searchBooks,
 } from '../controller/livro.controller.js'
 
 import {
@@ -13,12 +14,18 @@ import {
     editLivroSchema,   
     getAllLivrosSchema,
     getLivroSchema,
+    searchBooksSchema,
 } from '../schemas/livro.schema.js'
 
 const livroRoutes: FastifyPluginAsync = async (fastify) => {
     fastify.get('/livros', {
         schema: getAllLivrosSchema,
         handler: getAllLivros
+    })
+
+    fastify.get('/livros/search', {
+        schema: searchBooksSchema,
+        handler: searchBooks
     })
 
     fastify.get('/livro/:id', {

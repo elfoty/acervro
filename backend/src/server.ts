@@ -5,14 +5,30 @@ import jwt from '@fastify/jwt';
 import { authRoutes } from
     './route/auth.route';
 import livroRoutes from './route/livro.route';
-import categoriaRoutes from './route/categoria.route';  
+import categoriaRoutes from './route/categoria.route';
 import { verifyJWT } from './middleware/auth.middleware';
 import autorRoutes from './route/autor.route';
+import cors from '@fastify/cors';
 
 const app = Fastify();
+
+app.register(cors, {
+    origin: (origin, cb) => {
+        if (!origin || origin === 'http://localhost:5173' || origin === 'http://localhost:3000') {
+            cb(null, true)
+            return
+        }
+        cb(new Error("Not allowed"), false)
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+})
+
 app.register(jwt, {
     secret: process.env.JWT_SECRET || 'secret'
 });
+
 app.register(swagger, {
     mode: 'dynamic',
     swagger: {
@@ -22,6 +38,7 @@ app.register(swagger, {
         }
     }
 })
+
 app.register(swaggerUI, {
     routePrefix: '/docs',
     uiConfig: {

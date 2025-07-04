@@ -14,6 +14,12 @@ interface CreateLivroBody {
     categoriaIds: number[]
 }
 
+interface SearchBooksQuery {
+  q: string;
+  maxResults?: number;
+  searchType?: 'general' | 'isbn';
+}
+
 export async function getAllLivros(
     request: FastifyRequest,
     reply: FastifyReply
@@ -155,4 +161,18 @@ export async function deleteLivro(
         console.error('Erro ao deletar livro:', error)
         reply.code(500).send({ error: 'Erro ao deletar o livro' })
     }
+}
+
+export async function searchBooks(
+  request: FastifyRequest<{ Querystring: { q: string; maxResults?: number; searchType?: 'general' | 'isbn' } }>,
+  reply: FastifyReply
+) {
+  try {
+    const { q, maxResults = 5, searchType = 'general' } = request.query;
+    const livros = await livroRepo.searchBooks(q,  maxResults, searchType);
+    console.log("Livros encontrados:", livros);
+    return livros;
+  } catch (error) {
+    reply.code(500).send({ error: 'Erro ao buscar livros' });
+  }
 }
