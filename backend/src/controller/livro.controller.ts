@@ -12,6 +12,7 @@ interface CreateLivroBody {
     lancamento: string // ISO format string
     autorIds: number[]
     categoriaIds: number[]
+    usuarioId: number 
 }
 
 interface SearchBooksQuery {
@@ -21,17 +22,21 @@ interface SearchBooksQuery {
 }
 
 export async function getAllLivros(
-    request: FastifyRequest,
+    request: FastifyRequest<{ Params: getLivroParams }>,
     reply: FastifyReply
 ) {
     try {
-        const livros = await livroRepo.getAllLivros();
+        const { id } = request.params
+        const livros = await livroRepo.getAllLivros(Number(id));
 
         // Formate os dados para incluir arrays de autores e categorias
         const livrosFormatados = livros.map(livro => ({
             ...livro,
             autores: livro.autores.map(la => la.autor), // Extrai apenas os autores
-            categorias: livro.categoria.map(lc => lc.categoria) // Extrai apenas as categorias
+            categorias: livro.categoria.map(lc => lc.categoria), // Extrai apenas as categorias
+            usuario: {
+                idUsuario: livro.usuarioId // Inclui o ID do usuário
+            }
         }));
 
         return livrosFormatados;
@@ -73,6 +78,7 @@ export async function createLivro(
             lancamento: new Date(lancamento),
             autorIds,
             categoriaIds,
+            usuarioId: request.body.usuarioId // Inclui o ID do usuário se necessário
         })
 
         reply.code(201).send(livro)
@@ -170,7 +176,6 @@ export async function searchBooks(
   try {
     const { q, maxResults = 5, searchType = 'general' } = request.query;
     const livros = await livroRepo.searchBooks(q,  maxResults, searchType);
-    console.log("Livros encontrados:", livros);
     return livros;
   } catch (error) {
     reply.code(500).send({ error: 'Erro ao buscar livros' });

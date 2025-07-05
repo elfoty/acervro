@@ -15,6 +15,7 @@ interface CreateLivroInput {
   lancamento: Date
   autorIds: number[]
   categoriaIds: number[]
+  usuarioId:number
 }
 
 interface GoogleBook {
@@ -35,8 +36,9 @@ interface GoogleBook {
   };
 }
 
-export async function getAllLivros() {
+export async function getAllLivros(id: number) {
   return prisma.livro.findMany({
+    where: { usuarioId: id },
     include: {
       autores: {
         include: {
@@ -58,6 +60,7 @@ export async function createLivro(data: CreateLivroInput) {
       ISBN: data.ISBN,
       paginas: data.paginas,
       lancamento: data.lancamento,
+      usuarioId: data.usuarioId, // Associar o livro ao usuário
     },
   })
 
@@ -126,32 +129,11 @@ export async function updateLivro(id: number, data: Partial<CreateLivroInput>) {
 
 export async function searchBooks(query: string, maxResults: number, searchType: 'general' | 'isbn' = 'general',) {
   try {
-    let googleQuery = searchType === 'isbn' ? `isbn:${query}` : query;
-    console.log("teste repo")
-
-    const response = await axios.get('https://www.googleapis.com/books/v1/volumes', {
-      params: {
-        q: googleQuery,
-        maxResults: maxResults,
-        key: process.env.GOOGLE_BOOKS_API_KEY
-      }
-    });
-    console.log("teste repo 2", response.data);
-    return (response.data.items || []).map((book: GoogleBook) => {
-      console.log("teste repo 3", book);
-      return {
-        id: book.id,
-        title: book.volumeInfo.title,
-        authors: book.volumeInfo.authors || [],
-        publishedDate: book.volumeInfo.publishedDate,
-        pageCount: book.volumeInfo.pageCount,
-        isbn: book.volumeInfo.industryIdentifiers?.find(id =>
-          id.type === 'ISBN_10' || id.type === 'ISBN_13'
-        )?.identifier,
-        description: book.volumeInfo.description,
-        thumbnail: book.volumeInfo.imageLinks?.thumbnail
-      };
-    });
+    let url = 'https://www.googleapis.com/books/v1/volumes';
+    
+    const response = await axios.get('https://www.googleapis.com/books/v1/volumes?q=' + query + '&maxResults=' + maxResults + '&key=' + process.env.GOOGLE_BOOKS_API_KEY);
+    
+    return response.data.items
   } catch (error) {
     console.error('Error searching Google Books:', error);
     throw new Error('Failed to search books');

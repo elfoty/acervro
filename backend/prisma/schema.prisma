@@ -22,13 +22,12 @@ model Livro {
   categoria CategoriaLivro[]
   paginas Int
   lancamento DateTime
+  usuarioId Int
 }
 
 model Autor {
   id         Int        @id @default(autoincrement())
   nome String
-  nascimento DateTime
-  bio String
   livros LivroAutor[]
 }
 

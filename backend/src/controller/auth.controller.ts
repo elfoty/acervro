@@ -23,9 +23,9 @@ export async function loginController(
         return reply.status(401).send({ message: 'Senha inválida.' });
     }
     const token = jwt.sign(
-        { nome: usuario.nome, email: usuario.email },
+        { id: usuario.id, nome: usuario.nome, email: usuario.email  },
         process.env.JWT_SECRET || 'secret',
         { expiresIn: '1h' }
     );
-    return reply.send({ message: 'Login realizado com sucesso!', token });
+    return reply.send({ message: 'Login realizado com sucesso!', token, user: { id: usuario.id, email: usuario.email } });
 }

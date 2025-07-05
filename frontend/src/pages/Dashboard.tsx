@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
     Box, Typography, CircularProgress, Alert, Card, CardContent, CardHeader, Container,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import axios from '../api/axios';
 import Header from '../components/Header';
+import { AuthContext } from '../auth/AuthContext';
 interface Livro {
     nome: string
     ISBN: string
@@ -17,10 +18,14 @@ export default function Dashboard() {
     const [livros, setLivros] = useState<Livro[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
+    const { user } = useContext(AuthContext);
+    console.log('Usuário do contexto:', user);
+
     useEffect(() => {
         const carregarPoderes = async () => {
             try {
-                const response = await axios.get('/livros');
+                const usuario = await axios.get('/me');
+                const response = await axios.get('/livros/'+usuario.data.user.id);
                 setLivros(response.data);
             } catch (err: any) {
                 setErro('Erro ao carregar os poderes');
@@ -35,7 +40,7 @@ export default function Dashboard() {
         <Header />
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Typography variant="h4" gutterBottom textAlign="center">
-                Lista de Livros
+                Meus Livros
             </Typography>
             {carregando ? (
                 <Box display="flex" justifyContent="center" mt={4}>

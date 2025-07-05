@@ -10,7 +10,11 @@ export const LoginResponseSchema = {
     type: 'object',
     properties: {
         message: { type: 'string' },
-        token: { type: 'string' }
+        token: { type: 'string' },
+        user: {
+            id: { type: 'number' },
+            email: { type: 'string' }
+        }
     }
 }; 
 export const Login400Schema = {

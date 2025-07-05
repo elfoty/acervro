@@ -33,7 +33,9 @@ export const getAllLivrosSchema = {
                 nome: { type: 'string' }
               }
             }
-          }
+          },
+          usuarioId: { type: 'number' }, // ➕ incluído na resposta
+
         }
       }
     }
@@ -257,7 +259,7 @@ export const searchBooksSchema = {
             required: ['title']
           }
         },
-        required: ['id', 'volumeInfo']
+        required: ['id']
       }
     }
   }

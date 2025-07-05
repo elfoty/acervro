@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { loginController } from '../controller/auth.controller';
 import { LoginInputSchema, LoginResponseSchema, Login400Schema, Login401Schema } from '../schemas/auth.schema';
+import { verifyJWT } from '../middleware/auth.middleware';
 export async function authRoutes(fastify: FastifyInstance) {
     fastify.post('/auth/login', {
         schema: {
@@ -14,6 +15,11 @@ export async function authRoutes(fastify: FastifyInstance) {
             }
         },
         handler: loginController
+    });
+
+    fastify.get('/me', { preHandler: [verifyJWT] }, async (request, reply) => {
+        // O usuário está disponível em request.user
+        return { user: request.user };
     });
 }
 

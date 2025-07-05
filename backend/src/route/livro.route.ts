@@ -18,7 +18,7 @@ import {
 } from '../schemas/livro.schema.js'
 
 const livroRoutes: FastifyPluginAsync = async (fastify) => {
-    fastify.get('/livros', {
+    fastify.get('/livros/:id', {
         schema: getAllLivrosSchema,
         handler: getAllLivros
     })

@@ -1,13 +1,12 @@
-import { AppBar, Toolbar, Typography, IconButton, Button, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Button, Box, FormControl, InputLabel, Select, MenuItem, CircularProgress, Modal } from '@mui/material';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { useThemeMode } from '../theme/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { useMemo, useEffect, useState } from 'react';
+import { AuthContext, useAuth } from '../auth/AuthContext';
+import { useMemo, useEffect, useState, useContext } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-
 import axios from '../api/axios';
 import { debounce } from 'lodash';
 
@@ -16,19 +15,29 @@ interface Book {
   volumeInfo: {
     title: string;
     authors?: string[];
+    industryIdentifiers?: Array<{
+      type: string;
+      identifier: string;
+    }>;
+    imageLinks: {
+      thumbnail: string;
+    };
   };
 }
 
 export default function Header() {
-  const livros: any = [];
   const { isDark, toggleTheme } = useThemeMode();
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchType, setSearchType] = useState<'general' | 'isbn'>('general');
   const [inputValue, setInputValue] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [livroSelecionado, setLivroSelecionado] = useState<Book | null>(null);
+  const [linkThumbnail, setLinkThumbnail] = useState<string | null>(null);
+  //const { user } = useContext(AuthContext);
 
   const handleLogout = () => {
     logout();
@@ -45,32 +54,35 @@ export default function Header() {
     setError(null);
 
     try {
-      let query = type === 'isbn' ? `isbn:${searchTerm}` : searchTerm;
       const response = await axios.get('/livros/search', {
         params: {
-          q: query,
-          maxResults: 5,
+          q: type === 'isbn' ? `isbn:${searchTerm}` : searchTerm,
+          maxResults: 10,
           searchType: type,
         },
       });
-      console.log("teste fetchBooks", response.data);
+
       setSearchResults(response.data || []);
     } catch (err) {
-      console.error('Error fetching books:', err);
+      console.error('Erro na busca:', err);
       setError('Falha na busca. Tente novamente.');
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
-  }, 500), [searchType]);  // <-- adiciona searchType aqui
+  }, 500), []);
 
   useEffect(() => {
-    fetchBooks(inputValue, searchType);
+    if (inputValue) {
+      fetchBooks(inputValue, searchType);
+    }
+    return () => fetchBooks.cancel();
   }, [inputValue, searchType, fetchBooks]);
 
   const handleBookSelect = (event: React.SyntheticEvent, value: Book | null) => {
     if (value) {
-      navigate(`/livro/${value.id}`);
+      setLivroSelecionado(value);
+      setModalOpen(true);
     }
   };
 
@@ -83,7 +95,10 @@ export default function Header() {
               <InputLabel>Tipo de busca</InputLabel>
               <Select
                 value={searchType}
-                onChange={(e) => setSearchType(e.target.value as 'general' | 'isbn')}
+                onChange={(e) => {
+                  setSearchType(e.target.value as 'general' | 'isbn');
+                  setSearchResults([]);
+                }}
                 label="Tipo de busca"
                 sx={{ height: 40 }}
               >
@@ -93,50 +108,69 @@ export default function Header() {
             </FormControl>
 
             <Autocomplete
+              key={searchType} // Força recriação ao mudar o tipo
               disablePortal
               options={searchResults}
               loading={loading}
-              getOptionLabel={(option) =>
-                searchType === 'isbn'
-                  ? `${option.volumeInfo.title}`
-                  : option.volumeInfo.title
-              }
+              getOptionLabel={(option) => option.volumeInfo.title}
               renderOption={(props, option) => (
                 <li {...props}>
                   <div>
-                    <div>{option.volumeInfo.title}</div>
+                    <img
+                      src={option?.volumeInfo.imageLinks?.thumbnail}
+                      alt="thumb-small"
+                      style={{ maxWidth: 50 }}
+                    />                    
+                    <div><strong>{option.volumeInfo.title}</strong></div>
                     <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                      {option.volumeInfo.authors?.join(', ')}
-
+                      {searchType === 'isbn'
+                        ? `ISBN: ${option.volumeInfo.industryIdentifiers?.[0]?.identifier || 'Não disponível'}`
+                        : option.volumeInfo.authors?.join(', ')}
                     </div>
                   </div>
                 </li>
               )}
-              sx={{ width: 250 }}
+              sx={{ width: 200 }}
               onInputChange={(event, newInputValue) => {
                 setInputValue(newInputValue);
-                fetchBooks(newInputValue, searchType);
               }}
               onChange={handleBookSelect}
               inputValue={inputValue}
+              noOptionsText={
+                loading
+                  ? "Carregando..."
+                  : inputValue.length > 0
+                    ? "Nenhum resultado encontrado"
+                    : "Digite para buscar"
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label={searchType === 'isbn' ? "Digite o ISBN" : "Pesquise seu livro"}
-                  type={'text'}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                  helperText={error}
                   sx={{
                     '& .MuiInputBase-root': { height: 40 },
                     '& .MuiFormLabel-root': { position: 'absolute', top: '-20%' }
                   }}
                 />
               )}
+              filterOptions={(options) => options} // Desativa filtro local
             />
           </Box>
-          <Button color="inherit" onClick={() => navigate('/sobre')}>
+          <Button color="inherit" onClick={() => navigate('/')}>
             Meus livros
           </Button>
-          <Button color="inherit" onClick={() => navigate('/sobre')}>
-            Meus acervros
+          <Button color="inherit" onClick={() => navigate('/meus-acervos')}>
+            Meus acervos
           </Button>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -146,9 +180,19 @@ export default function Header() {
           <Button color="inherit" onClick={handleLogout}>
             Sair
           </Button>
-
         </Box>
       </Toolbar>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Box sx={{ p: 4, bgcolor: 'background.paper', m: 'auto', mt: 10, width: 300 }}>
+          <h2>{livroSelecionado?.volumeInfo.title}</h2>
+          <img
+            src={livroSelecionado?.volumeInfo.imageLinks?.thumbnail}
+            alt="thumb-small"
+            style={{ maxWidth: 200 }}
+          />
+          <Button onClick={() => setModalOpen(false)}>Fechar</Button>
+        </Box>
+      </Modal>
     </AppBar>
   );
-};
+}

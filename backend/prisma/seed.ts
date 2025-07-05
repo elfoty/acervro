@@ -43,16 +43,16 @@ async function main() {
     // --- Criar 10 Livros ---
     const livros = await prisma.livro.createMany({
         data: [
-            { nome: 'Harry Potter e a Pedra Filosofal', ISBN: '9788532530833', paginas: 223, lancamento: new Date('1997-06-26') },
-            { nome: '1984', ISBN: '9780451524935', paginas: 328, lancamento: new Date('1949-06-08') },
-            { nome: 'Assassinato no Expresso do Oriente', ISBN: '9788532522852', paginas: 256, lancamento: new Date('1934-01-01') },
-            { nome: 'O Iluminado', ISBN: '9788581053421', paginas: 447, lancamento: new Date('1977-01-28') },
-            { nome: 'Dom Casmurro', ISBN: '9788538077105', paginas: 208, lancamento: new Date('1899-01-01') },
-            { nome: 'A Hora da Estrela', ISBN: '9788525416123', paginas: 96, lancamento: new Date('1977-01-01') },
-            { nome: 'O Hobbit', ISBN: '9788533613379', paginas: 310, lancamento: new Date('1937-09-21') },
-            { nome: 'Fundação', ISBN: '9788576572008', paginas: 320, lancamento: new Date('1951-05-01') },
-            { nome: 'Orgulho e Preconceito', ISBN: '9788532272741', paginas: 424, lancamento: new Date('1813-01-28') },
-            { nome: 'Deuses Americanos', ISBN: '9788532522853', paginas: 560, lancamento: new Date('2001-06-19') }
+            { nome: 'Harry Potter e a Pedra Filosofal', ISBN: '9788532530833', paginas: 223, lancamento: new Date('1997-06-26'), usuarioId: 2 },
+            { nome: '1984', ISBN: '9780451524935', paginas: 328, lancamento: new Date('1949-06-08'), usuarioId: 1 },
+            { nome: 'Assassinato no Expresso do Oriente', ISBN: '9788532522852', paginas: 256, lancamento: new Date('1934-01-01'), usuarioId: 2 },
+            { nome: 'O Iluminado', ISBN: '9788581053421', paginas: 447, lancamento: new Date('1977-01-28'), usuarioId: 1 },
+            { nome: 'Dom Casmurro', ISBN: '9788538077105', paginas: 208, lancamento: new Date('1899-01-01'), usuarioId: 2 },
+            { nome: 'A Hora da Estrela', ISBN: '9788525416123', paginas: 96, lancamento: new Date('1977-01-01'), usuarioId: 2 },
+            { nome: 'O Hobbit', ISBN: '9788533613379', paginas: 310, lancamento: new Date('1937-09-21'), usuarioId: 2 },
+            { nome: 'Fundação', ISBN: '9788576572008', paginas: 320, lancamento: new Date('1951-05-01'), usuarioId: 1 },
+            { nome: 'Orgulho e Preconceito', ISBN: '9788532272741', paginas: 424, lancamento: new Date('1813-01-28'), usuarioId: 1 },
+            { nome: 'Deuses Americanos', ISBN: '9788532522853', paginas: 560, lancamento: new Date('2001-06-19'), usuarioId: 1 } // Exemplo de usuário associado
         ]
     });
     console.log(`${livros.count} livros criados!`);
