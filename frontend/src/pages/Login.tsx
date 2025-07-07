@@ -28,13 +28,15 @@ export default function Login() {
     }
     return (
         <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            height="100vh"
-            px={2}
-            gap={2}
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100vh",
+                px: 2,
+                gap: 2
+            }} // fundo semi-transparente
         >
             <Typography variant="h4">Login</Typography>
             <TextField
@@ -42,6 +44,26 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 fullWidth
+                sx={{
+                    '& .MuiInputBase-input': { // Cor do texto digitado
+                        color: '#ffffff', // Branco
+                        mixBlendMode: 'overlay'
+                    },
+                    '& .MuiInputLabel-root': { // Cor do label
+                        color: '#ffffff', // Cinza claro
+                        mixBlendMode: 'overlay'
+                    },
+                    '& .MuiOutlinedInput-root': { // Cor da borda
+                        '& fieldset': {
+                            borderColor: '#ffffff', // Cinza
+                            mixBlendMode: 'overlay'
+                        },
+                        '&:hover fieldset': {
+                            borderColor: '#ffffff', // Branco ao passar o mouse
+                            mixBlendMode: 'overlay'
+                        },
+                    },
+                }}
             />
             <TextField
                 label="Senha"
@@ -49,8 +71,28 @@ export default function Login() {
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 fullWidth
+                sx={{
+                    '& .MuiInputBase-input': { // Cor do texto digitado
+                        color: '#ffffff', // Branco
+                        mixBlendMode: 'overlay'
+                    },
+                    '& .MuiInputLabel-root': { // Cor do label
+                        color: '#ffffff', // Cinza claro
+                        mixBlendMode: 'overlay'
+                    },
+                    '& .MuiOutlinedInput-root': { // Cor da borda
+                        '& fieldset': {
+                            borderColor: '#ffffff', // Cinza
+                            mixBlendMode: 'overlay'
+                        },
+                        '&:hover fieldset': {
+                            borderColor: '#ffffff', // Branco ao passar o mouse
+                            mixBlendMode: 'overlay'
+                        },
+                    },
+                }}
             />
-            <Button variant="contained" fullWidth onClick={handleLogin}>
+            <Button variant="contained" sx={{ color:'#b98fe0' ,mixBlendMode: 'overlay'}}fullWidth onClick={handleLogin}>
                 Entrar
             </Button>
             <Snackbar open={!!erro} autoHideDuration={4000} onClose={() => setErro('')}>

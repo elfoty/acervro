@@ -23,6 +23,9 @@ model Livro {
   paginas Int
   lancamento DateTime
   usuarioId Int
+  capa String
+  descricao String
+  acervro AcervroLivro[]
 }
 
 model Autor {
@@ -35,8 +38,8 @@ model LivroAutor {
   livroId  Int
   autorId  Int
 
-  livro    Livro @relation(fields: [livroId], references: [id])
-  autor    Autor @relation(fields: [autorId], references: [id])
+  livro    Livro @relation(fields: [livroId], references: [id], onDelete: Cascade)
+  autor    Autor @relation(fields: [autorId], references: [id], onDelete: Cascade)
 
   @@id([livroId, autorId])
 }
@@ -57,10 +60,27 @@ model CategoriaLivro {
   livroId     Int
   categoriaId Int
 
-  livro       Livro     @relation(fields: [livroId], references: [id])
+  livro       Livro     @relation(fields: [livroId], references: [id], onDelete: Cascade)
   categoria   Categoria @relation(fields: [categoriaId], references: [id])
 
   @@id([livroId, categoriaId])
+}
+
+model Acervro {
+  id    Int              @id @default(autoincrement())
+  livros AcervroLivro[]
+  nome  String           @unique
+  usuarioId Int
+}
+
+model AcervroLivro {
+  livroId     Int
+  acervroId Int
+
+  livro       Livro     @relation(fields: [livroId], references: [id], onDelete: Cascade)
+  acervro   Acervro @relation(fields: [acervroId], references: [id], onDelete: Cascade)
+
+  @@id([livroId, acervroId])
 }
 
 model Categoria {

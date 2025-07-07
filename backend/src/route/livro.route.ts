@@ -6,12 +6,19 @@ import {
     deleteLivro,
     editLivro,
     searchBooks,
+    createAcervro,
+    getAcervros,
+    editAcervro,
+    deleteAcervro,
 } from '../controller/livro.controller.js'
 
 import {
+    createAcervroSchema,
     createLivroSchema,
+    deleteAcervroSchema,
     deleteLivroSchema,
     editLivroSchema,   
+    getAcervrosSchema,   
     getAllLivrosSchema,
     getLivroSchema,
     searchBooksSchema,
@@ -46,6 +53,25 @@ const livroRoutes: FastifyPluginAsync = async (fastify) => {
     fastify.delete('/livro/:id', {
         schema: deleteLivroSchema,
         handler: deleteLivro
+    })
+
+    fastify.post('/acervro', {
+        schema: createAcervroSchema,
+        handler: createAcervro
+    })
+
+    fastify.get('/acervros/:id', {
+        schema: getAcervrosSchema,
+        handler: getAcervros
+    })
+
+    fastify.put('/edit-acervro', {
+        schema: createAcervroSchema,
+        handler: editAcervro
+    })
+    fastify.delete('/acervro/:id', {
+        schema: deleteAcervroSchema,
+        handler: deleteAcervro
     })
 }
 

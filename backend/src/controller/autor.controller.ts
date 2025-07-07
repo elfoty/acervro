@@ -38,7 +38,7 @@ export async function createAutor(
 ) {
     try {
         const { nome, nascimento, bio } = request.body
-        const novoAutor = await autorRepo.createAutor({ nome, nascimento, bio })
+        const novoAutor = await autorRepo.createAutor({ nome })
         reply.code(201).send(novoAutor)
     } catch (error) {
         console.error('Erro ao criar autor:', error)

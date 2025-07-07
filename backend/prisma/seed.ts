@@ -9,16 +9,16 @@ async function main() {
     // --- Criar 10 Autores ---
     const autores = await prisma.autor.createMany({
         data: [
-            { nome: 'J.K. Rowling', nascimento: new Date('1965-07-31'), bio: 'Autora de Harry Potter' },
-            { nome: 'George Orwell', nascimento: new Date('1903-06-25'), bio: 'Autor de 1984' },
-            { nome: 'Agatha Christie', nascimento: new Date('1890-09-15'), bio: 'Rainha do Crime' },
-            { nome: 'Stephen King', nascimento: new Date('1947-09-21'), bio: 'Mestre do Terror' },
-            { nome: 'Machado de Assis', nascimento: new Date('1839-06-21'), bio: 'Fundador da ABL' },
-            { nome: 'Clarice Lispector', nascimento: new Date('1920-12-10'), bio: 'Modernista brasileira' },
-            { nome: 'Tolkien', nascimento: new Date('1892-01-03'), bio: 'Criador de Senhor dos Anéis' },
-            { nome: 'Isaac Asimov', nascimento: new Date('1920-01-02'), bio: 'Pai da Ficção Científica' },
-            { nome: 'Jane Austen', nascimento: new Date('1775-12-16'), bio: 'Romances clássicos' },
-            { nome: 'Neil Gaiman', nascimento: new Date('1960-11-10'), bio: 'Autor de Sandman' }
+            { nome: 'J.K. Rowling' },
+            { nome: 'George Orwell' },
+            { nome: 'Agatha Christie', },
+            { nome: 'Stephen King' },
+            { nome: 'Machado de Assis' },
+            { nome: 'Clarice Lispector' },
+            { nome: 'Tolkien' },
+            { nome: 'Isaac Asimov' },
+            { nome: 'Jane Austen' },
+            { nome: 'Neil Gaiman' }
         ]
     });
     console.log(`${autores.count} autores criados!`);
@@ -43,18 +43,99 @@ async function main() {
     // --- Criar 10 Livros ---
     const livros = await prisma.livro.createMany({
         data: [
-            { nome: 'Harry Potter e a Pedra Filosofal', ISBN: '9788532530833', paginas: 223, lancamento: new Date('1997-06-26'), usuarioId: 2 },
-            { nome: '1984', ISBN: '9780451524935', paginas: 328, lancamento: new Date('1949-06-08'), usuarioId: 1 },
-            { nome: 'Assassinato no Expresso do Oriente', ISBN: '9788532522852', paginas: 256, lancamento: new Date('1934-01-01'), usuarioId: 2 },
-            { nome: 'O Iluminado', ISBN: '9788581053421', paginas: 447, lancamento: new Date('1977-01-28'), usuarioId: 1 },
-            { nome: 'Dom Casmurro', ISBN: '9788538077105', paginas: 208, lancamento: new Date('1899-01-01'), usuarioId: 2 },
-            { nome: 'A Hora da Estrela', ISBN: '9788525416123', paginas: 96, lancamento: new Date('1977-01-01'), usuarioId: 2 },
-            { nome: 'O Hobbit', ISBN: '9788533613379', paginas: 310, lancamento: new Date('1937-09-21'), usuarioId: 2 },
-            { nome: 'Fundação', ISBN: '9788576572008', paginas: 320, lancamento: new Date('1951-05-01'), usuarioId: 1 },
-            { nome: 'Orgulho e Preconceito', ISBN: '9788532272741', paginas: 424, lancamento: new Date('1813-01-28'), usuarioId: 1 },
-            { nome: 'Deuses Americanos', ISBN: '9788532522853', paginas: 560, lancamento: new Date('2001-06-19'), usuarioId: 1 } // Exemplo de usuário associado
+            {
+                nome: 'Harry Potter e a Pedra Filosofal',
+                descricao: 'Primeiro livro da saga do jovem bruxo Harry Potter.',
+                capa: 'https://link-para-capa/harrypotter1.jpg',
+                ISBN: '9788532530833',
+                paginas: 223,
+                lancamento: new Date('1997-06-26'),
+                usuarioId: 2
+            },
+            {
+                nome: '1984',
+                descricao: 'Distopia clássica de George Orwell sobre vigilância e controle.',
+                capa: 'https://link-para-capa/1984.jpg',
+                ISBN: '9780451524935',
+                paginas: 328,
+                lancamento: new Date('1949-06-08'),
+                usuarioId: 1
+            },
+            {
+                nome: 'Assassinato no Expresso do Oriente',
+                descricao: 'Mistério de assassinato no famoso trem expresso.',
+                capa: 'https://link-para-capa/expresso-do-oriente.jpg',
+                ISBN: '9788532522852',
+                paginas: 256,
+                lancamento: new Date('1934-01-01'),
+                usuarioId: 2
+            },
+            {
+                nome: 'O Iluminado',
+                descricao: 'Romance de terror psicológico de Stephen King.',
+                capa: 'https://link-para-capa/o-iluminado.jpg',
+                ISBN: '9788581053421',
+                paginas: 447,
+                lancamento: new Date('1977-01-28'),
+                usuarioId: 1
+            },
+            {
+                nome: 'Dom Casmurro',
+                descricao: 'Clássico da literatura brasileira de Machado de Assis.',
+                capa: 'https://link-para-capa/dom-casmurro.jpg',
+                ISBN: '9788538077105',
+                paginas: 208,
+                lancamento: new Date('1899-01-01'),
+                usuarioId: 2
+            },
+            {
+                nome: 'A Hora da Estrela',
+                descricao: 'Romance de Clarice Lispector sobre a vida de uma jovem nordestina.',
+                capa: 'https://link-para-capa/a-hora-da-estrela.jpg',
+                ISBN: '9788525416123',
+                paginas: 96,
+                lancamento: new Date('1977-01-01'),
+                usuarioId: 2
+            },
+            {
+                nome: 'O Hobbit',
+                descricao: 'A aventura de Bilbo Bolseiro na Terra Média.',
+                capa: 'https://link-para-capa/o-hobbit.jpg',
+                ISBN: '9788533613379',
+                paginas: 310,
+                lancamento: new Date('1937-09-21'),
+                usuarioId: 2
+            },
+            {
+                nome: 'Fundação',
+                descricao: 'Primeiro livro da série de ficção científica de Isaac Asimov.',
+                capa: 'https://link-para-capa/fundacao.jpg',
+                ISBN: '9788576572008',
+                paginas: 320,
+                lancamento: new Date('1951-05-01'),
+                usuarioId: 1
+            },
+            {
+                nome: 'Orgulho e Preconceito',
+                descricao: 'Clássico romance inglês de Jane Austen.',
+                capa: 'https://link-para-capa/orgulho-e-preconceito.jpg',
+                ISBN: '9788532272741',
+                paginas: 424,
+                lancamento: new Date('1813-01-28'),
+                usuarioId: 1
+            },
+            {
+                nome: 'Deuses Americanos',
+                descricao: 'Romance de Neil Gaiman que mistura mitologia e fantasia.',
+                capa: 'https://link-para-capa/deuses-americanos.jpg',
+                ISBN: '9788532522853',
+                paginas: 560,
+                lancamento: new Date('2001-06-19'),
+                usuarioId: 1
+            }
         ]
     });
+
     console.log(`${livros.count} livros criados!`);
 
     // --- Relacionar Livros com Autores (LivroAutor) ---

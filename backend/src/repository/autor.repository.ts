@@ -6,7 +6,13 @@ export async function getAllAutores() {
   return prisma.autor.findMany()
 }
 
-export async function createAutor(data: { nome: string; nascimento: Date; bio: string }) {
+export async function createAutor(data: { nome: string}) {
+  return prisma.autor.create({
+    data
+  })
+}
+
+export async function findByName(data: { nome: string}) {
   return prisma.autor.create({
     data
   })

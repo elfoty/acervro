@@ -14,6 +14,7 @@ interface AuthContextType {
     logout: () => void;
     user: User | null;
     setUser?: (user: User | null) => void;
+    isAuthenticated: boolean;
 }
 
 
@@ -30,16 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('token', token);
         } else {
             localStorage.removeItem('token');
+            delete axios.defaults.headers.common['Authorization'];
+
         }
     }, [token]);
 
     const logout = () => {
         setToken(null);
         localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
+
     };
 
+   
+
+
     return (
-        <AuthContext.Provider value={{ token, setToken, logout, user, setUser }}>
+        <AuthContext.Provider value={{ token, setToken, logout, user, setUser, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );

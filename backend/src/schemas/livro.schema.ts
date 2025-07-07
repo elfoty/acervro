@@ -7,11 +7,12 @@ export const getAllLivrosSchema = {
       items: {
         type: 'object',
         properties: {
-          idLivro: { type: 'number' },
+          id: { type: 'number' },
           nome: { type: 'string' },
           ISBN: { type: 'string' },
           paginas: { type: 'number' },
           lancamento: { type: 'string', format: 'date-time' },
+          descricao: { type: 'string' },
           autores: {
             type: 'array',
             items: {
@@ -34,8 +35,8 @@ export const getAllLivrosSchema = {
               }
             }
           },
-          usuarioId: { type: 'number' }, // ➕ incluído na resposta
-
+          usuarioId: { type: 'number' },
+          capa: { type: 'string', nullable: true }
         }
       }
     }
@@ -55,7 +56,7 @@ export const getLivroSchema = {
     200: {
       type: 'object',
       properties: {
-        idLivro: { type: 'number' },
+        id: { type: 'number' },
         nome: { type: 'string' },
         ISBN: { type: 'string' },
         paginas: { type: 'number' },
@@ -92,25 +93,28 @@ export const createLivroSchema = {
   tags: ['Livro'],
   body: {
     type: 'object',
-    required: ['nome', 'ISBN', 'paginas', 'lancamento', 'autorIds', 'categoriaIds'],
+    required: ['nome', 'ISBN', 'paginas', 'lancamento', 'autores', 'categorias'],
     properties: {
       nome: { type: 'string' },
       ISBN: { type: 'string' },
       paginas: { type: 'number' },
-      lancamento: { type: 'string', format: 'date-time' },
-      autorIds: { type: 'array', items: { type: 'number' } }, // Body ainda usa IDs
-      categoriaIds: { type: 'array', items: { type: 'number' } }
+      lancamento: { type: 'string' }, // se vier só o ano ou string sem hora
+      autores: { type: 'array', items: { type: 'string' } }, // nomes dos autores
+      categorias: { type: 'array', items: { type: 'string' } }, // nomes das categorias
+      descricao: { type: 'string' },
+      capa: { type: 'string' }, // URL ou caminho da capa do livro
     }
   },
   response: {
     201: {
       type: 'object',
       properties: {
-        idLivro: { type: 'number' },
+        id: { type: 'number' },
         nome: { type: 'string' },
         ISBN: { type: 'string' },
         paginas: { type: 'number' },
-        lancamento: { type: 'string', format: 'date-time' },
+        lancamento: { type: 'string' },
+        capa: { type: 'string' },
         autores: {
           type: 'array',
           items: {
@@ -173,7 +177,7 @@ export const editLivroSchema = {
     200: {
       type: 'object',
       properties: {
-        idLivro: { type: 'number' },
+        id: { type: 'number' },
         nome: { type: 'string' },
         ISBN: { type: 'string' },
         paginas: { type: 'number' },
@@ -223,18 +227,23 @@ export const searchBooksSchema = {
       items: {
         type: 'object',
         properties: {
+          kind: { type: 'string' },
           id: { type: 'string' },
+          etag: { type: 'string' },
+          selfLink: { type: 'string' },
           volumeInfo: {
             type: 'object',
             properties: {
               title: { type: 'string' },
+              subtitle: { type: 'string', nullable: true },
               authors: {
                 type: 'array',
                 items: { type: 'string' },
                 nullable: true
               },
+              publisher: { type: 'string', nullable: true },
               publishedDate: { type: 'string', nullable: true },
-              pageCount: { type: 'number', nullable: true },
+              description: { type: 'string', nullable: true },
               industryIdentifiers: {
                 type: 'array',
                 nullable: true,
@@ -247,20 +256,318 @@ export const searchBooksSchema = {
                   required: ['type', 'identifier']
                 }
               },
-              description: { type: 'string', nullable: true },
+              pageCount: { type: 'integer', nullable: true },
+              dimensions: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  height: { type: 'string', nullable: true },
+                  width: { type: 'string', nullable: true },
+                  thickness: { type: 'string', nullable: true }
+                }
+              },
+              printType: { type: 'string', nullable: true },
+              mainCategory: { type: 'string', nullable: true },
+              categories: {
+                type: 'array',
+                items: { type: 'string' },
+                nullable: true
+              },
+              averageRating: { type: 'number', nullable: true },
+              ratingsCount: { type: 'integer', nullable: true },
+              contentVersion: { type: 'string', nullable: true },
               imageLinks: {
                 type: 'object',
                 nullable: true,
                 properties: {
-                  thumbnail: { type: 'string', nullable: true }
+                  smallThumbnail: { type: 'string', nullable: true },
+                  thumbnail: { type: 'string', nullable: true },
+                  small: { type: 'string', nullable: true },
+                  medium: { type: 'string', nullable: true },
+                  large: { type: 'string', nullable: true },
+                  extraLarge: { type: 'string', nullable: true }
                 }
-              }
+              },
+              language: { type: 'string', nullable: true },
+              previewLink: { type: 'string', nullable: true },
+              infoLink: { type: 'string', nullable: true },
+              canonicalVolumeLink: { type: 'string', nullable: true }
             },
             required: ['title']
           }
         },
-        required: ['id']
+        required: ['id', 'volumeInfo']
       }
     }
   }
 }
+
+export const getAcervrosSchema = {
+  description: 'Listar acervros do usuário',
+  tags: ['Acervro'],
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number' },
+          nome: { type: 'string' },
+          usuarioId: { type: 'number' },
+          livros: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                livroId: { type: 'number' },
+                acervroId: { type: 'number' },
+                livro: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    nome: { type: 'string' },
+                    ISBN: { type: 'string' },
+                    autores: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'number' },
+                          nome: { type: 'string' }
+                        }
+                      }
+                    },
+                    categorias: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'number' },
+                          nome: { type: 'string' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+
+export const createAcervroSchema = {
+  description: 'Criar novo acervro',
+  tags: ['Acervro'],
+  body: {
+    type: 'object',
+    required: ['nome', 'livros', 'usuarioId'],
+    properties: {
+      nome: { type: 'string' },
+      usuarioId: { type: 'number' },
+      livros: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id'], // para associar só o id é necessário
+          properties: {
+            id: { type: 'number' },
+            nome: { type: 'string' },
+            ISBN: { type: 'string' },
+            paginas: { type: 'number' },
+            lancamento: { type: 'string', format: 'date-time' },
+            descricao: { type: 'string' },
+            autores: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  nome: { type: 'string' },
+                  nascimento: { type: 'string', format: 'date-time' },
+                  bio: { type: 'string' }
+                }
+              }
+            },
+            categorias: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  nome: { type: 'string' }
+                }
+              }
+            },
+            usuarioId: { type: 'number' },
+            capa: { type: 'string', nullable: true }
+          }
+        }
+      }
+    }
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        nome: { type: 'string' },
+        usuarioId: { type: 'number' },
+        livros: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              nome: { type: 'string' },
+              ISBN: { type: 'string' },
+              paginas: { type: 'number' },
+              lancamento: { type: 'string', format: 'date-time' },
+              descricao: { type: 'string' },
+              autores: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    nome: { type: 'string' },
+                    nascimento: { type: 'string', format: 'date-time' },
+                    bio: { type: 'string' }
+                  }
+                }
+              },
+              categorias: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    nome: { type: 'string' }
+                  }
+                }
+              },
+              usuarioId: { type: 'number' },
+              capa: { type: 'string', nullable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+export const editAcervroSchema = {
+  description: 'Editar novo acervro',
+  tags: ['Acervro'],
+  body: {
+    type: 'object',
+    required: ['nome', 'livros', 'usuarioId'],
+    properties: {
+      id: {type: 'number'},
+      nome: { type: 'string' },
+      usuarioId: { type: 'number' },
+      livros: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id'], // para associar só o id é necessário
+          properties: {
+            id: { type: 'number' },
+            nome: { type: 'string' },
+            ISBN: { type: 'string' },
+            paginas: { type: 'number' },
+            lancamento: { type: 'string', format: 'date-time' },
+            descricao: { type: 'string' },
+            autores: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  nome: { type: 'string' },
+                  nascimento: { type: 'string', format: 'date-time' },
+                  bio: { type: 'string' }
+                }
+              }
+            },
+            categorias: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  nome: { type: 'string' }
+                }
+              }
+            },
+            usuarioId: { type: 'number' },
+            capa: { type: 'string', nullable: true }
+          }
+        }
+      }
+    }
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        nome: { type: 'string' },
+        usuarioId: { type: 'number' },
+        livros: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              nome: { type: 'string' },
+              ISBN: { type: 'string' },
+              paginas: { type: 'number' },
+              lancamento: { type: 'string', format: 'date-time' },
+              descricao: { type: 'string' },
+              autores: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    nome: { type: 'string' },
+                    nascimento: { type: 'string', format: 'date-time' },
+                    bio: { type: 'string' }
+                  }
+                }
+              },
+              categorias: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    nome: { type: 'string' }
+                  }
+                }
+              },
+              usuarioId: { type: 'number' },
+              capa: { type: 'string', nullable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+export const deleteAcervroSchema = {
+  description: 'Deletar acervro por ID',
+  tags: ['Acervro'],
+  params: {
+    type: 'object',
+    properties: {
+      id: { type: 'number' }
+    }
+  }
+}
+

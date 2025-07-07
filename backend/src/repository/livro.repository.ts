@@ -16,6 +16,8 @@ interface CreateLivroInput {
   autorIds: number[]
   categoriaIds: number[]
   usuarioId:number
+  capa: string
+  descricao: string 
 }
 
 interface GoogleBook {
@@ -34,6 +36,24 @@ interface GoogleBook {
       thumbnail?: string;
     };
   };
+}
+
+interface CreateAcervroBody {
+    id: number
+    nome: string
+    usuarioId: number
+    livros: [{
+        id: number
+        nome: string
+        ISBN: string
+        paginas: number
+        lancamento: string
+        autores: string[]
+        categorias: string[]
+        usuarioId: number
+        descricao: string
+        capa: string
+    }]
 }
 
 export async function getAllLivros(id: number) {
@@ -59,6 +79,8 @@ export async function createLivro(data: CreateLivroInput) {
       nome: data.nome,
       ISBN: data.ISBN,
       paginas: data.paginas,
+      descricao: data.descricao, // Adicionando descrição
+      capa: data.capa,
       lancamento: data.lancamento,
       usuarioId: data.usuarioId, // Associar o livro ao usuário
     },
@@ -132,7 +154,6 @@ export async function searchBooks(query: string, maxResults: number, searchType:
     let url = 'https://www.googleapis.com/books/v1/volumes';
     
     const response = await axios.get('https://www.googleapis.com/books/v1/volumes?q=' + query + '&maxResults=' + maxResults + '&key=' + process.env.GOOGLE_BOOKS_API_KEY);
-    
     return response.data.items
   } catch (error) {
     console.error('Error searching Google Books:', error);
@@ -155,9 +176,7 @@ export async function importBookFromGoogle(googleBookId: string, categoriaIds: n
       // Adicionando valores padrão para campos obrigatórios
       const newAutor = await prisma.autor.create({
         data: {
-          nome: authorName,
-          nascimento: new Date(1900, 0, 1), // Data padrão
-          bio: 'Autor importado do Google Books' // Bio padrão
+          nome: authorName
         }
       });
 
@@ -204,3 +223,133 @@ export async function findOrImportBookByISBN(isbn: string, categoriaIds: number[
     throw error;
   }
 }
+
+export async function findCategoriaByName(nome: string) {
+  return prisma.categoria.findFirst({
+    where: { nome }
+  });
+}
+
+export async function createCategoria(data: { nome: string }) {
+  return prisma.categoria.create({
+    data
+  });
+}
+
+export async function getAcervros(id: number) {
+    return prisma.acervro.findMany({
+        where: { usuarioId: id },
+        include: {
+            livros: {
+                include: {
+                    livro: {
+                        include: {
+                            autores: { include: { autor: true } },
+                            categoria: { include: { categoria: true } },
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+export async function createAcervro(body: CreateAcervroBody) {
+  const { nome, livros, usuarioId } = body;
+
+  // 1. Criar o Acervro
+  const novoAcervro = await prisma.acervro.create({
+    data: {
+      nome,
+      usuarioId, // lembre-se de passar o usuarioId no body
+    },
+  });
+
+  // 2. Criar as associações na tabela AcervroLivro
+  await prisma.acervroLivro.createMany({
+    data: livros.map((l) => ({
+      acervroId: novoAcervro.id,
+      livroId: l.id,
+    })),
+    skipDuplicates: true,
+  });
+
+  // 3. Retornar o acervro com os livros associados
+  return prisma.acervro.findUnique({
+    where: { id: novoAcervro.id },
+    include: {
+      livros: {
+        include: {
+          livro: {
+            include: {
+              autores: {
+                include: { autor: true }
+              },
+              categoria: {
+                include: { categoria: true }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+export async function editAcervro(data: any) {
+  const id = data.id;
+
+  // Primeiro, exclui todos os relacionamentos antigos (se for desejado substituir completamente os livros)
+  await prisma.acervroLivro.deleteMany({
+    where: { acervroId: id },
+  });
+
+  // Em seguida, atualiza o acervo e recria os relacionamentos
+  return prisma.acervro.update({
+    where: { id },
+    data: {
+      nome: data.nome,
+      usuarioId: data.usuarioId,
+      livros: {
+        createMany: {
+          data: data.livros.map((livro: any) => ({
+            livroId: livro.id,
+          })),
+          skipDuplicates: true,
+        },
+      },
+    },
+    include: {
+      livros: {
+        include: {
+          livro: {
+            include: {
+              autores: { include: { autor: true } },
+              categoria: { include: { categoria: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function getAcervroById(id: number) {
+  return prisma.acervro.findUnique({
+    where: { id },
+    include: {
+      livros: {
+        include: {
+          livro: true,
+        },
+      }
+    },
+  })
+}
+
+export async function deleteAcervro(id: number) {
+  return prisma.acervro.delete({
+    where: { id }
+  })
+}
+
